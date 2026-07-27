@@ -651,6 +651,9 @@ async function addStore(){
   showToast('已新增店家');
 }
 async function deleteStore(id){
+  const store = state.stores.find(s=>s.id===id);
+  const name = store ? store.name : '這個店家';
+  if(!confirm(`確定要刪除「${name}」嗎？此店家底下的所有商品也會一併刪除，此動作無法復原。`)) return;
   state.stores = state.stores.filter(s=>s.id!==id);
   state.products = state.products.filter(p=>p.storeId!==id);
   renderAll();
@@ -714,6 +717,9 @@ async function addProduct(){
   showToast('已新增商品');
 }
 async function deleteProduct(id){
+  const product = state.products.find(p=>p.id===id);
+  const name = product ? product.name : '這個商品';
+  if(!confirm(`確定要刪除「${name}」嗎？此動作無法復原。`)) return;
   state.products = state.products.filter(p=>p.id!==id);
   renderAll();
   await saveState();
@@ -730,6 +736,9 @@ async function addBuyer(){
   showToast('已新增買家');
 }
 async function deleteBuyer(id){
+  const buyer = state.buyers.find(b=>b.id===id);
+  const name = buyer ? buyer.name : '這位買家';
+  if(!confirm(`確定要刪除買家「${name}」嗎？此動作無法復原。`)) return;
   state.buyers = state.buyers.filter(b=>b.id!==id);
   renderAll();
   await saveState();
@@ -764,6 +773,7 @@ async function updateRecordFlag(id, field, value){
 }
 
 async function deleteRecord(id){
+  if(!confirm('確定要刪除這筆購買紀錄嗎？此動作無法復原。')) return;
   state.records = state.records.filter(r=>r.id!==id);
   renderAll();
   await saveState();
