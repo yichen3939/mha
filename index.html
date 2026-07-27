@@ -211,8 +211,11 @@
   <div class="panel" id="panel-buyers">
     <div class="box">
       <h2>新增買家</h2>
+      <label for="new-buyer">買家名字</label>
+      <input type="text" id="new-buyer" placeholder="輸入買家名字">
+      <label for="new-buyer-social">社群名(IG / LINE 等)</label>
       <div class="opt-add">
-        <input type="text" id="new-buyer" placeholder="輸入買家名稱">
+        <input type="text" id="new-buyer-social" placeholder="輸入社群名稱">
         <button id="btn-add-buyer">新增</button>
       </div>
       <div class="opt-list" id="buyer-list"></div>
@@ -376,10 +379,15 @@ function renderAll(){
   renderLedger();
 }
 
+function buyerLabel(b){
+  if(!b) return '';
+  return b.social ? `${b.name}（${b.social}）` : b.name;
+}
+
 function renderBuyerOptions(){
   const sel = document.getElementById('f-buyer');
   sel.innerHTML = state.buyers.length
-    ? state.buyers.map(b=>`<option value="${b.id}">${escapeHtml(b.name)}</option>`).join('')
+    ? state.buyers.map(b=>`<option value="${b.id}">${escapeHtml(buyerLabel(b))}</option>`).join('')
     : '<option value="">尚無買家，請先新增</option>';
 }
 
@@ -548,16 +556,48 @@ async function saveProductEdit(id){
   showToast('已更新商品');
 }
 
+let editingBuyerId = null;
+
 function renderBuyerList(){
   const list = document.getElementById('buyer-list');
-  list.innerHTML = state.buyers.map(b=>`
-    <div class="opt-row">
-      <span class="name">${escapeHtml(b.name)}</span>
-      <button data-id="${b.id}">刪除</button>
-    </div>`).join('');
+  list.innerHTML = state.buyers.map(b=>{
+    if(editingBuyerId === b.id){
+      return `<div class="opt-row" style="flex-wrap:wrap;">
+        <input type="text" class="edit-buyer-name" value="${escapeHtml(b.name)}" placeholder="買家名字" style="flex:1; min-width:100px;">
+        <input type="text" class="edit-buyer-social" value="${escapeHtml(b.social||'')}" placeholder="社群名" style="flex:1; min-width:100px;">
+        <button data-action="save" data-id="${b.id}">儲存</button>
+        <button data-action="cancel">取消</button>
+      </div>`;
+    }
+    return `<div class="opt-row">
+      <span class="name">${escapeHtml(b.name)}${b.social ? ` <span class="sub">（${escapeHtml(b.social)}）</span>` : ''}</span>
+      <button data-action="edit" data-id="${b.id}">編輯</button>
+      <button data-action="delete" data-id="${b.id}">刪除</button>
+    </div>`;
+  }).join('');
   list.querySelectorAll('button').forEach(btn=>{
-    btn.onclick = ()=> deleteBuyer(btn.dataset.id);
+    const id = btn.dataset.id;
+    const action = btn.dataset.action;
+    if(action === 'edit'){ btn.onclick = ()=>{ editingBuyerId = id; renderBuyerList(); }; }
+    else if(action === 'cancel'){ btn.onclick = ()=>{ editingBuyerId = null; renderBuyerList(); }; }
+    else if(action === 'delete'){ btn.onclick = ()=> deleteBuyer(id); }
+    else if(action === 'save'){ btn.onclick = ()=> saveBuyerEdit(id); }
   });
+}
+
+async function saveBuyerEdit(id){
+  const list = document.getElementById('buyer-list');
+  const nameInput = list.querySelector('.edit-buyer-name');
+  const socialInput = list.querySelector('.edit-buyer-social');
+  const name = nameInput ? nameInput.value.trim() : '';
+  const social = socialInput ? socialInput.value.trim() : '';
+  if(!name){ showToast('買家名字不可空白'); return; }
+  const buyer = state.buyers.find(b=>b.id===id);
+  if(buyer){ buyer.name = name; buyer.social = social; }
+  editingBuyerId = null;
+  renderAll();
+  await saveState();
+  showToast('已更新買家');
 }
 
 function renderLedger(){
@@ -569,7 +609,7 @@ function renderLedger(){
     valueSel.style.display = '';
     const options = mode === 'store' ? state.stores : state.buyers;
     const prevVal = valueSel.value;
-    valueSel.innerHTML = options.map(o=>`<option value="${o.id}">${escapeHtml(o.name)}</option>`).join('');
+    valueSel.innerHTML = options.map(o=>`<option value="${o.id}">${escapeHtml(mode==='buyer' ? buyerLabel(o) : o.name)}</option>`).join('');
     if(options.some(o=>o.id===prevVal)){ valueSel.value = prevVal; }
   }
 
@@ -581,37 +621,66 @@ function renderLedger(){
     const val = valueSel.value;
     records = records.filter(r=>r.buyerId === val);
   }
-  records.sort((a,b)=>(b.ts||0)-(a.ts||0));
+
+  // 合併「同買家 + 同店家 + 同商品」只有數量不同的紀錄：數量與金額累加
+  const groups = [];
+  const groupIndex = new Map();
+  records.forEach(r=>{
+    const key = `${r.buyerId}|${r.storeId}|${r.productId}`;
+    let g = groupIndex.get(key);
+    if(!g){
+      g = { key, buyerId:r.buyerId, storeId:r.storeId, productId:r.productId, qty:0, jpy:0, ids:[], paidAll:true, successAll:true, latestTs:0 };
+      groupIndex.set(key, g);
+      groups.push(g);
+    }
+    const qty = Math.max(1, Number(r.qty||1));
+    g.qty += qty;
+    g.jpy += Number(r.priceJPY||0) * qty;
+    g.ids.push(r.id);
+    if(!r.paid) g.paidAll = false;
+    if(!r.success) g.successAll = false;
+    if((r.ts||0) > g.latestTs) g.latestTs = r.ts||0;
+  });
+
+  if(mode === 'store'){
+    groups.sort((a,b)=>{
+      const nameA = buyerLabel(state.buyers.find(x=>x.id===a.buyerId));
+      const nameB = buyerLabel(state.buyers.find(x=>x.id===b.buyerId));
+      const cmp = nameA.localeCompare(nameB, 'zh-Hant');
+      return cmp !== 0 ? cmp : (b.latestTs - a.latestTs);
+    });
+  } else {
+    groups.sort((a,b)=>b.latestTs - a.latestTs);
+  }
 
   const wrap = document.getElementById('ledger-wrap');
-  if(records.length === 0){
+  if(groups.length === 0){
     wrap.innerHTML = '<div class="empty-state">沒有符合條件的紀錄</div>';
     return;
   }
 
   let totalJPY = 0;
   let totalTWD = 0;
-  const rows = records.map(r=>{
-    const buyer = state.buyers.find(b=>b.id===r.buyerId);
-    const store = state.stores.find(s=>s.id===r.storeId);
-    const product = state.products.find(p=>p.id===r.productId);
-    const qty = Math.max(1, Number(r.qty||1));
-    const lineJPY = Number(r.priceJPY||0) * qty;
+  const rows = groups.map(g=>{
+    const buyer = state.buyers.find(b=>b.id===g.buyerId);
+    const store = state.stores.find(s=>s.id===g.storeId);
+    const product = state.products.find(p=>p.id===g.productId);
+    const lineJPY = g.jpy;
     totalJPY += lineJPY;
     totalTWD += roundUpTo5(lineJPY*RATE);
     const thumb = (product && product.image)
       ? `<img src="${product.image}" style="width:32px;height:32px;object-fit:cover;border-radius:4px;border:1px solid var(--line);">`
       : `<div style="width:32px;height:32px;border-radius:4px;background:var(--paper-dark);border:1px dashed var(--line);"></div>`;
-    return `<tr data-id="${r.id}">
-      <td>${escapeHtml(buyer?buyer.name:'未知')}</td>
+    return `<tr data-ids="${g.ids.join(',')}">
+      <td>${escapeHtml(buyerLabel(buyer)||'未知')}</td>
       <td>${escapeHtml(store?store.name:'未知')}</td>
       <td>${thumb}</td>
       <td>${escapeHtml(product?product.name:'未知')}</td>
-      <td class="num">x${qty}</td>
+      <td class="num">x${g.qty}</td>
       <td class="num">${fmtJPY(lineJPY)}</td>
       <td class="num">${fmtTWD(lineJPY)}</td>
-      <td class="chk"><input type="checkbox" class="chk-paid" ${r.paid?'checked':''}></td>
-      <td class="chk"><input type="checkbox" class="chk-success" ${r.success?'checked':''}></td>
+      <td class="chk"><input type="checkbox" class="chk-paid" ${g.paidAll?'checked':''}></td>
+      <td class="chk"><input type="checkbox" class="chk-success" ${g.successAll?'checked':''}></td>
       <td class="del-cell"><button class="del-record">✕</button></td>
     </tr>`;
   }).join('');
@@ -631,11 +700,11 @@ function renderLedger(){
     </table>
     </div>`;
 
-  wrap.querySelectorAll('tr[data-id]').forEach(tr=>{
-    const id = tr.dataset.id;
-    tr.querySelector('.chk-paid').onchange = (e)=> updateRecordFlag(id, 'paid', e.target.checked);
-    tr.querySelector('.chk-success').onchange = (e)=> updateRecordFlag(id, 'success', e.target.checked);
-    tr.querySelector('.del-record').onclick = ()=> deleteRecord(id);
+  wrap.querySelectorAll('tr[data-ids]').forEach(tr=>{
+    const ids = tr.dataset.ids.split(',');
+    tr.querySelector('.chk-paid').onchange = (e)=> updateRecordFlags(ids, 'paid', e.target.checked);
+    tr.querySelector('.chk-success').onchange = (e)=> updateRecordFlags(ids, 'success', e.target.checked);
+    tr.querySelector('.del-record').onclick = ()=> deleteRecords(ids);
   });
 }
 
@@ -727,10 +796,13 @@ async function deleteProduct(id){
 
 async function addBuyer(){
   const input = document.getElementById('new-buyer');
+  const socialInput = document.getElementById('new-buyer-social');
   const name = input.value.trim();
-  if(!name){ showToast('請輸入買家名稱'); return; }
-  state.buyers.push({ id: uid(), name });
+  const social = socialInput.value.trim();
+  if(!name){ showToast('請輸入買家名字'); return; }
+  state.buyers.push({ id: uid(), name, social });
   input.value = '';
+  socialInput.value = '';
   renderAll();
   await saveState();
   showToast('已新增買家');
@@ -772,9 +844,28 @@ async function updateRecordFlag(id, field, value){
   await saveState();
 }
 
+async function updateRecordFlags(ids, field, value){
+  ids.forEach(id=>{
+    const rec = state.records.find(r=>r.id===id);
+    if(rec) rec[field] = value;
+  });
+  await saveState();
+}
+
 async function deleteRecord(id){
   if(!confirm('確定要刪除這筆購買紀錄嗎？此動作無法復原。')) return;
   state.records = state.records.filter(r=>r.id!==id);
+  renderAll();
+  await saveState();
+}
+
+async function deleteRecords(ids){
+  const msg = ids.length > 1
+    ? `這是合併後的紀錄，共 ${ids.length} 筆。確定要一併刪除嗎？此動作無法復原。`
+    : '確定要刪除這筆購買紀錄嗎？此動作無法復原。';
+  if(!confirm(msg)) return;
+  const idSet = new Set(ids);
+  state.records = state.records.filter(r=>!idSet.has(r.id));
   renderAll();
   await saveState();
 }
