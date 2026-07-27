@@ -219,9 +219,8 @@
     <div class="box">
       <h2>雲端連線設定(Firebase)</h2>
       <p class="hint">
-        資料要「不論哪台手機或電腦打開網址都看到一樣的內容」，需要接一個雲端資料庫。
-        這裡用免費的 Google Firebase Firestore。設定教學請看下方，
-        設定值貼上後按「儲存並連線」，之後每次打開都會自動連線。
+        這個網頁已經內建你的 Firebase 連線設定，打開網頁就會自動連線，不需要再手動貼設定。
+        這個分頁只有在你想「換一個 Firebase 專案」時才需要用到：貼上新的設定並按下方按鈕即可覆蓋內建設定。
       </p>
       <label for="firebase-config">Firebase 設定 (firebaseConfig JSON)</label>
       <textarea id="firebase-config" placeholder='{"apiKey":"...","authDomain":"...","projectId":"...","storageBucket":"...","messagingSenderId":"...","appId":"..."}'></textarea>
@@ -245,6 +244,16 @@
 <script>
 const CONFIG_KEY = 'purchase-tracker-firebase-config';
 const RATE = 0.25; // JPY -> TWD
+// 直接內建的 Firebase 設定，打開網頁就會自動連線，不需要到設定頁貼設定
+const DEFAULT_FIREBASE_CONFIG = {
+  apiKey: "AIzaSyA2ZX8Fba9Z7KsfZTd8hwsY0CYEJdbYEGU",
+  authDomain: "mhadaigou.firebaseapp.com",
+  projectId: "mhadaigou",
+  storageBucket: "mhadaigou.firebasestorage.app",
+  messagingSenderId: "608134629058",
+  appId: "1:608134629058:web:2251443b965d1d84c69d5b",
+  measurementId: "G-Y63FC6GS17"
+};
 let state = { stores: [], products: [], buyers: [], records: [] };
 let db = null;
 let docRef = null;
@@ -267,12 +276,15 @@ function setConn(status, text){
 // ---------- Firebase connection ----------
 function tryConnect(){
   const raw = localStorage.getItem(CONFIG_KEY);
-  if(!raw){
+  let cfg = DEFAULT_FIREBASE_CONFIG;
+  if(raw){
+    try{ cfg = JSON.parse(raw); }catch(e){ console.error('本機儲存的設定格式錯誤，改用內建設定', e); }
+  }
+  if(!cfg || !cfg.projectId){
     setConn('bad', '尚未連線，請至「設定」貼上 Firebase 設定');
     return;
   }
   try{
-    const cfg = JSON.parse(raw);
     if(!firebase.apps.length){ firebase.initializeApp(cfg); }
     db = firebase.firestore();
     docRef = db.collection('appdata').doc('main');
@@ -296,7 +308,7 @@ function tryConnect(){
     );
   }catch(e){
     console.error(e);
-    setConn('bad', '設定格式錯誤');
+    setConn('bad', '連線失敗，請確認設定內容');
   }
 }
 
