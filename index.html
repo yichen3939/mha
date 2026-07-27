@@ -20,300 +20,99 @@
   }
   *{box-sizing:border-box;}
   body{
-    margin:0;
-    background:var(--paper);
-    color:var(--ink);
+    margin:0; background:var(--paper); color:var(--ink);
     font-family:'Noto Sans TC', sans-serif;
-    -webkit-font-smoothing:antialiased;
-    min-height:100vh;
+    -webkit-font-smoothing:antialiased; min-height:100vh;
   }
-  .wrap{
-    max-width:720px;
-    margin:0 auto;
-    padding:28px 16px 80px;
-  }
-  header{
-    text-align:center;
-    margin-bottom:24px;
-    position:relative;
-  }
+  .wrap{ max-width:840px; margin:0 auto; padding:24px 14px 80px; }
+  header{ text-align:center; margin-bottom:20px; }
   header h1{
-    font-family:'Courier Prime', monospace;
-    font-weight:700;
-    font-size:28px;
-    letter-spacing:2px;
-    margin:0 0 4px;
+    font-family:'Courier Prime', monospace; font-weight:700;
+    font-size:26px; letter-spacing:2px; margin:0 0 4px;
   }
-  header p{
-    margin:0;
-    color:var(--ink-soft);
-    font-size:13px;
-    letter-spacing:1px;
-  }
-  .tabs{
-    display:flex;
-    gap:8px;
-    margin-bottom:16px;
-  }
+  header p{ margin:0; color:var(--ink-soft); font-size:12px; letter-spacing:1px; }
+  #conn-status{ font-size:11px; margin-top:6px; color:var(--ink-soft); }
+  #conn-status.ok{ color:var(--stamp-green); }
+  #conn-status.bad{ color:var(--stamp-red); }
+
+  .tabs{ display:flex; gap:6px; margin-bottom:16px; flex-wrap:wrap; }
   .tab-btn{
-    flex:1;
-    padding:10px 8px;
-    border:1px solid var(--line);
-    background:var(--paper-dark);
-    color:var(--ink-soft);
-    font-family:'Noto Sans TC', sans-serif;
-    font-weight:600;
-    font-size:13px;
-    border-radius:6px;
-    cursor:pointer;
-    transition:all .15s ease;
+    flex:1 1 auto; min-width:70px; padding:9px 6px;
+    border:1px solid var(--line); background:var(--paper-dark);
+    color:var(--ink-soft); font-family:'Noto Sans TC', sans-serif;
+    font-weight:600; font-size:12.5px; border-radius:6px; cursor:pointer;
   }
-  .tab-btn.active{
-    background:var(--ink);
-    color:var(--paper);
-    border-color:var(--ink);
-  }
-  .panel{ display:none; }
-  .panel.active{ display:block; }
+  .tab-btn.active{ background:var(--ink); color:var(--paper); border-color:var(--ink); }
+  .panel{ display:none; } .panel.active{ display:block; }
 
-  .box{
-    background:var(--card);
-    border:1px solid var(--line);
-    border-radius:10px;
-    padding:18px;
-    margin-bottom:16px;
-  }
+  .box{ background:var(--card); border:1px solid var(--line); border-radius:10px; padding:16px; margin-bottom:16px; }
   .box h2{
-    font-size:14px;
-    font-family:'Courier Prime', monospace;
-    letter-spacing:1px;
-    margin:0 0 14px;
-    color:var(--ink-soft);
-    text-transform:uppercase;
+    font-size:13px; font-family:'Courier Prime', monospace; letter-spacing:1px;
+    margin:0 0 14px; color:var(--ink-soft); text-transform:uppercase;
   }
-  label{
-    display:block;
-    font-size:12px;
-    color:var(--ink-soft);
-    margin-bottom:4px;
-    margin-top:12px;
-  }
+  label{ display:block; font-size:12px; color:var(--ink-soft); margin-bottom:4px; margin-top:12px; }
   label:first-of-type{ margin-top:0; }
-  input[type=text], input[type=number], select{
-    width:100%;
-    padding:10px 10px;
-    border:1px solid var(--line);
-    border-radius:6px;
-    background:#fff;
-    font-family:'Noto Sans TC', sans-serif;
-    font-size:14px;
-    color:var(--ink);
+  input[type=text], input[type=number], select, textarea{
+    width:100%; padding:9px 10px; border:1px solid var(--line); border-radius:6px;
+    background:#fff; font-family:'Noto Sans TC', sans-serif; font-size:14px; color:var(--ink);
   }
-  input:focus, select:focus{
-    outline:2px solid var(--ink);
-    outline-offset:1px;
+  textarea{ font-family:'Courier Prime', monospace; font-size:12px; min-height:110px; resize:vertical; }
+  input:focus, select:focus, textarea:focus{ outline:2px solid var(--ink); outline-offset:1px; }
+  .row2{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .price-display{
+    display:flex; gap:14px; margin-top:12px; padding:10px 12px;
+    background:var(--paper-dark); border-radius:6px; font-family:'Courier Prime', monospace;
+    font-size:14px; font-weight:700;
   }
-  .row2{
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:10px;
-  }
-  .checks{
-    display:flex;
-    gap:20px;
-    margin-top:14px;
-  }
-  .check-item{
-    display:flex;
-    align-items:center;
-    gap:8px;
-    font-size:13px;
-    color:var(--ink-soft);
-  }
-  .check-item input{ width:18px; height:18px; accent-color:var(--stamp-green); }
-
+  .price-display span.lbl{ font-family:'Noto Sans TC',sans-serif; font-weight:500; font-size:11px; color:var(--ink-soft); display:block; }
   button.primary{
-    margin-top:16px;
-    width:100%;
-    padding:12px;
-    background:var(--ink);
-    color:var(--paper);
-    border:none;
-    border-radius:6px;
-    font-family:'Courier Prime', monospace;
-    font-weight:700;
-    letter-spacing:1px;
-    font-size:14px;
-    cursor:pointer;
+    margin-top:16px; width:100%; padding:12px; background:var(--ink); color:var(--paper);
+    border:none; border-radius:6px; font-family:'Courier Prime', monospace;
+    font-weight:700; letter-spacing:1px; font-size:14px; cursor:pointer;
   }
   button.primary:active{ transform:scale(.98); }
-
-  .opt-add{
-    display:flex;
-    gap:8px;
-  }
+  .opt-add{ display:flex; gap:8px; }
   .opt-add input{ flex:1; }
-  .opt-add button{
-    padding:0 16px;
-    border:none;
-    border-radius:6px;
-    background:var(--ink);
-    color:var(--paper);
-    font-weight:600;
-    cursor:pointer;
-  }
-  .opt-list{
-    margin-top:10px;
-    display:flex;
-    flex-direction:column;
-    gap:6px;
-  }
-  .opt-row{
-    display:flex;
-    align-items:center;
-    gap:10px;
-    padding:6px 8px;
-    background:var(--paper-dark);
-    border-radius:6px;
-    font-size:13px;
-  }
-  .opt-row img{
-    width:32px; height:32px; object-fit:cover; border-radius:4px;
-    border:1px solid var(--line);
-  }
-  .opt-row .thumb-empty{
-    width:32px; height:32px; border-radius:4px;
-    background:var(--card); border:1px dashed var(--line);
-  }
-  .opt-row span{ flex:1; }
-  .opt-row button{
-    background:none; border:none; color:var(--stamp-red);
-    font-size:13px; cursor:pointer; font-weight:600;
-  }
+  .opt-add button{ padding:0 16px; border:none; border-radius:6px; background:var(--ink); color:var(--paper); font-weight:600; cursor:pointer; }
+  .opt-list{ margin-top:10px; display:flex; flex-direction:column; gap:6px; }
+  .opt-row{ display:flex; align-items:center; gap:10px; padding:6px 8px; background:var(--paper-dark); border-radius:6px; font-size:13px; }
+  .opt-row img{ width:32px; height:32px; object-fit:cover; border-radius:4px; border:1px solid var(--line); }
+  .opt-row .thumb-empty{ width:32px; height:32px; border-radius:4px; background:var(--card); border:1px dashed var(--line); }
+  .opt-row .sub{ color:var(--ink-soft); font-size:11px; }
+  .opt-row span.name{ flex:1; }
+  .opt-row button{ background:none; border:none; color:var(--stamp-red); font-size:13px; cursor:pointer; font-weight:600; }
 
-  .records{
-    display:flex;
-    flex-direction:column;
-    gap:14px;
-  }
-  .ticket{
-    background:var(--card);
-    border:1px solid var(--line);
-    border-radius:10px;
-    padding:16px;
-    position:relative;
-    display:flex;
-    gap:14px;
-  }
-  .ticket::before{
-    content:"";
-    position:absolute;
-    left:0; top:0; bottom:0;
-    width:4px;
-    border-radius:10px 0 0 10px;
-    background:var(--line);
-  }
-  .ticket.paid.success::before{ background:var(--stamp-green); }
-  .ticket.paid:not(.success)::before{ background:var(--stamp-amber); }
-  .ticket:not(.paid)::before{ background:var(--stamp-red); }
+  .empty-state{ text-align:center; color:var(--ink-soft); font-size:13px; padding:36px 20px; border:1px dashed var(--line); border-radius:10px; }
 
-  .ticket img.thumb{
-    width:56px; height:56px; object-fit:cover; border-radius:8px;
-    border:1px solid var(--line);
-    flex-shrink:0;
-  }
-  .ticket .thumb-empty{
-    width:56px; height:56px; border-radius:8px; flex-shrink:0;
-    background:var(--paper-dark); border:1px dashed var(--line);
-  }
-  .ticket-body{ flex:1; min-width:0; }
-  .ticket-top{
-    display:flex;
-    justify-content:space-between;
-    align-items:baseline;
-    gap:8px;
-  }
-  .ticket-buyer{
-    font-weight:700;
-    font-size:15px;
-  }
-  .ticket-price{
-    font-family:'Courier Prime', monospace;
-    font-weight:700;
-    font-size:16px;
-    white-space:nowrap;
-  }
-  .ticket-meta{
-    color:var(--ink-soft);
-    font-size:13px;
-    margin-top:2px;
-  }
-  .stamps{
-    display:flex;
-    gap:8px;
-    margin-top:10px;
-  }
-  .stamp{
-    font-size:11px;
-    font-weight:700;
-    padding:3px 8px;
-    border-radius:20px;
-    border:1.5px solid;
-    letter-spacing:.5px;
-  }
-  .stamp.on.paid{ color:var(--stamp-amber); border-color:var(--stamp-amber); }
-  .stamp.on.success{ color:var(--stamp-green); border-color:var(--stamp-green); }
-  .stamp.off{ color:var(--line); border-color:var(--line); }
+  .filters{ display:flex; gap:8px; margin-bottom:14px; }
+  .filters select{ flex:1; }
 
-  .ticket-actions{
-    display:flex;
-    flex-direction:column;
-    gap:6px;
-    align-items:flex-end;
+  table.ledger{ width:100%; border-collapse:collapse; font-size:13px; }
+  table.ledger th{
+    text-align:left; font-family:'Courier Prime', monospace; font-size:11px;
+    letter-spacing:.5px; color:var(--ink-soft); text-transform:uppercase;
+    border-bottom:2px solid var(--line); padding:6px 6px;
   }
-  .icon-btn{
-    background:none;
-    border:none;
-    cursor:pointer;
-    font-size:16px;
-    color:var(--ink-soft);
-    padding:2px;
-  }
-  .icon-btn.del{ color:var(--stamp-red); }
-
-  .empty-state{
-    text-align:center;
-    color:var(--ink-soft);
-    font-size:13px;
-    padding:40px 20px;
-    border:1px dashed var(--line);
-    border-radius:10px;
-  }
+  table.ledger td{ padding:8px 6px; border-bottom:1px solid var(--line); vertical-align:middle; }
+  table.ledger tr:last-child td{ border-bottom:none; }
+  td.num{ font-family:'Courier Prime', monospace; white-space:nowrap; }
+  td.chk{ text-align:center; }
+  td.chk input{ width:18px; height:18px; accent-color:var(--stamp-green); }
+  .del-cell{ text-align:center; }
+  .del-cell button{ background:none; border:none; color:var(--stamp-red); cursor:pointer; font-size:14px; }
+  tfoot td{ font-weight:700; font-family:'Courier Prime', monospace; border-top:2px solid var(--ink); }
 
   .toast{
-    position:fixed;
-    bottom:20px; left:50%;
-    transform:translateX(-50%) translateY(20px);
-    background:var(--ink);
-    color:var(--paper);
-    padding:10px 18px;
-    border-radius:8px;
-    font-size:13px;
-    opacity:0;
-    transition:all .25s ease;
-    pointer-events:none;
-    z-index:50;
+    position:fixed; bottom:20px; left:50%; transform:translateX(-50%) translateY(20px);
+    background:var(--ink); color:var(--paper); padding:10px 18px; border-radius:8px;
+    font-size:13px; opacity:0; transition:all .25s ease; pointer-events:none; z-index:50;
   }
-  .toast.show{
-    opacity:1;
-    transform:translateX(-50%) translateY(0);
-  }
-
-  select{ appearance:none; background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%234B5D57'><path d='M5 7l5 5 5-5z'/></svg>"); background-repeat:no-repeat; background-position:right 10px center; }
-
-  @media (max-width:420px){
-    .ticket{ flex-wrap:wrap; }
-    .ticket-actions{ flex-direction:row; margin-left:auto; }
+  .toast.show{ opacity:1; transform:translateX(-50%) translateY(0); }
+  .hint{ font-size:12px; color:var(--ink-soft); line-height:1.7; margin:0 0 12px; }
+  .hint code{ background:var(--paper-dark); padding:1px 5px; border-radius:4px; }
+  @media (max-width:520px){
+    table.ledger{ font-size:12px; }
+    .row2{ grid-template-columns:1fr; }
   }
 </style>
 </head>
@@ -321,24 +120,28 @@
 <div class="wrap">
   <header>
     <h1>採購帳本</h1>
-    <p>買家 · 商店 · 商品 · 匯款 · 成功</p>
+    <p>店家 · 商品 · 買家 · 對帳</p>
+    <div id="conn-status">尚未連線</div>
   </header>
 
   <div class="tabs">
     <button class="tab-btn active" data-tab="record">新增紀錄</button>
-    <button class="tab-btn" data-tab="manage">管理商店 / 商品</button>
-    <button class="tab-btn" data-tab="backup">備份</button>
+    <button class="tab-btn" data-tab="reconcile">對帳表</button>
+    <button class="tab-btn" data-tab="manage">店家/商品</button>
+    <button class="tab-btn" data-tab="buyers">買家</button>
+    <button class="tab-btn" data-tab="settings">設定</button>
   </div>
 
+  <!-- 新增紀錄 -->
   <div class="panel active" id="panel-record">
     <div class="box">
       <h2>新增購買紀錄</h2>
       <label for="f-buyer">買家</label>
-      <input type="text" id="f-buyer" placeholder="輸入買家名稱">
+      <select id="f-buyer"></select>
 
       <div class="row2">
         <div>
-          <label for="f-store">商店</label>
+          <label for="f-store">店家</label>
           <select id="f-store"></select>
         </div>
         <div>
@@ -347,300 +150,441 @@
         </div>
       </div>
 
-      <label for="f-price">價格 (NT$)</label>
-      <input type="number" id="f-price" placeholder="0" min="0">
-
-      <div class="checks">
-        <label class="check-item"><input type="checkbox" id="f-paid"> 已匯款</label>
-        <label class="check-item"><input type="checkbox" id="f-success"> 購買成功</label>
+      <div class="price-display">
+        <div><span class="lbl">日幣</span><span id="disp-jpy">¥ 0</span></div>
+        <div><span class="lbl">台幣(x0.25)</span><span id="disp-twd">NT$ 0</span></div>
       </div>
 
       <button class="primary" id="btn-add-record">加入紀錄</button>
     </div>
-
-    <div id="records" class="records"></div>
+    <div id="recent-records"></div>
   </div>
 
+  <!-- 對帳表 -->
+  <div class="panel" id="panel-reconcile">
+    <div class="box">
+      <h2>對帳表</h2>
+      <div class="filters">
+        <select id="filter-mode">
+          <option value="all">全部</option>
+          <option value="store">依店家</option>
+          <option value="buyer">依買家</option>
+        </select>
+        <select id="filter-value" style="display:none;"></select>
+      </div>
+      <div id="ledger-wrap"></div>
+    </div>
+  </div>
+
+  <!-- 店家/商品管理 -->
   <div class="panel" id="panel-manage">
     <div class="box">
-      <h2>商店清單</h2>
+      <h2>新增店家</h2>
       <div class="opt-add">
-        <input type="text" id="new-store" placeholder="新增商店名稱">
+        <input type="text" id="new-store" placeholder="輸入店家名稱">
         <button id="btn-add-store">新增</button>
       </div>
       <div class="opt-list" id="store-list"></div>
     </div>
 
     <div class="box">
-      <h2>商品清單</h2>
+      <h2>新增商品</h2>
+      <label for="np-store">所屬店家</label>
+      <select id="np-store"></select>
       <label for="new-product">商品名稱</label>
       <input type="text" id="new-product" placeholder="輸入商品名稱">
       <label for="new-product-img">商品圖片網址(選填)</label>
       <input type="text" id="new-product-img" placeholder="https://...">
+      <label for="new-product-price">商品價格(日幣 ¥)</label>
+      <input type="number" id="new-product-price" placeholder="0" min="0">
       <button class="primary" id="btn-add-product">新增商品</button>
       <div class="opt-list" id="product-list"></div>
     </div>
   </div>
 
-  <div class="panel" id="panel-backup">
+  <!-- 買家管理 -->
+  <div class="panel" id="panel-buyers">
     <div class="box">
-      <h2>資料備份 / 搬移裝置</h2>
-      <p style="font-size:13px; color:var(--ink-soft); margin:0 0 14px; line-height:1.6;">
-        資料存在這個瀏覽器裡,不會自動同步到其他手機或瀏覽器。
-        要在別的裝置上使用同一份資料,請先「匯出」存成檔案,
-        再到另一個裝置打開這個網頁後「匯入」該檔案。
+      <h2>新增買家</h2>
+      <div class="opt-add">
+        <input type="text" id="new-buyer" placeholder="輸入買家名稱">
+        <button id="btn-add-buyer">新增</button>
+      </div>
+      <div class="opt-list" id="buyer-list"></div>
+    </div>
+  </div>
+
+  <!-- 設定 -->
+  <div class="panel" id="panel-settings">
+    <div class="box">
+      <h2>雲端連線設定(Firebase)</h2>
+      <p class="hint">
+        資料要「不論哪台手機或電腦打開網址都看到一樣的內容」，需要接一個雲端資料庫。
+        這裡用免費的 Google Firebase Firestore。設定教學請看下方，
+        設定值貼上後按「儲存並連線」，之後每次打開都會自動連線。
       </p>
-      <button class="primary" id="btn-export">匯出資料(下載檔案)</button>
-      <label for="import-file" style="margin-top:16px;">匯入資料(選擇檔案)</label>
-      <input type="file" id="import-file" accept="application/json">
+      <label for="firebase-config">Firebase 設定 (firebaseConfig JSON)</label>
+      <textarea id="firebase-config" placeholder='{"apiKey":"...","authDomain":"...","projectId":"...","storageBucket":"...","messagingSenderId":"...","appId":"..."}'></textarea>
+      <button class="primary" id="btn-save-config">儲存並連線</button>
+      <p class="hint" style="margin-top:16px;">
+        <b>申請步驟：</b><br>
+        1. 前往 <code>console.firebase.google.com</code>，登入 Google 帳號，建立新專案。<br>
+        2. 專案建立後，左側選「建構 → Firestore Database」，選「以測試模式建立」。<br>
+        3. 進入 Firestore 的「規則」分頁，暫時設定為
+        <code>allow read, write: if true;</code>（僅供個人小工具使用，注意這代表任何人拿到專案設定都能讀寫資料）。<br>
+        4. 回到「專案總覽」，點選網頁圖示 <code>&lt;/&gt;</code> 新增網頁應用程式，取名後會出現一段 <code>firebaseConfig</code> 物件，把整段大括號內容複製貼到上面的欄位。
+      </p>
     </div>
   </div>
 </div>
 
 <div class="toast" id="toast"></div>
 
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script>
-const STORAGE_KEY = 'tracker-data';
-let state = { stores: [], products: [], records: [] };
-let loaded = false;
+const CONFIG_KEY = 'purchase-tracker-firebase-config';
+const RATE = 0.25; // JPY -> TWD
+let state = { stores: [], products: [], buyers: [], records: [] };
+let db = null;
+let docRef = null;
 
 function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
-
+function escapeHtml(str){ return String(str).replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+function fmtJPY(n){ return '¥ ' + Number(n||0).toLocaleString(); }
+function fmtTWD(n){ return 'NT$ ' + Math.round(Number(n||0)*RATE).toLocaleString(); }
 function showToast(msg){
   const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
+  t.textContent = msg; t.classList.add('show');
   setTimeout(()=>t.classList.remove('show'), 1800);
 }
+function setConn(status, text){
+  const el = document.getElementById('conn-status');
+  el.textContent = text;
+  el.className = status;
+}
 
-async function loadState(){
+// ---------- Firebase connection ----------
+function tryConnect(){
+  const raw = localStorage.getItem(CONFIG_KEY);
+  if(!raw){
+    setConn('bad', '尚未連線，請至「設定」貼上 Firebase 設定');
+    return;
+  }
   try{
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if(raw){
-      state = JSON.parse(raw);
-      state.stores = state.stores || [];
-      state.products = state.products || [];
-      state.records = state.records || [];
-    }
+    const cfg = JSON.parse(raw);
+    if(!firebase.apps.length){ firebase.initializeApp(cfg); }
+    db = firebase.firestore();
+    docRef = db.collection('appdata').doc('main');
+    setConn('ok', '連線中...');
+    docRef.onSnapshot(
+      (doc)=>{
+        const data = doc.data();
+        state = {
+          stores: (data && data.stores) || [],
+          products: (data && data.products) || [],
+          buyers: (data && data.buyers) || [],
+          records: (data && data.records) || []
+        };
+        setConn('ok', '已連線 · 即時同步中');
+        renderAll();
+      },
+      (err)=>{
+        console.error(err);
+        setConn('bad', '連線失敗，請檢查設定與 Firestore 規則');
+      }
+    );
   }catch(e){
     console.error(e);
-    // parsing failed or storage unavailable, keep default state
+    setConn('bad', '設定格式錯誤');
   }
-  loaded = true;
-  renderAll();
 }
 
 async function saveState(){
+  if(!docRef){ showToast('尚未連線雲端，請先到設定頁完成連線'); return; }
   try{
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    await docRef.set(state);
   }catch(e){
-    showToast('儲存發生錯誤,瀏覽器儲存空間可能已滿');
     console.error(e);
+    showToast('儲存失敗，請檢查網路或 Firestore 規則');
   }
 }
 
-function exportData(){
-  const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  const date = new Date().toISOString().slice(0,10);
-  a.href = url;
-  a.download = `採購帳本備份-${date}.json`;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
-  showToast('已下載備份檔案');
+function normalizeConfigInput(raw){
+  let s = raw.trim();
+  // strip a leading "const firebaseConfig =" style assignment if present
+  s = s.replace(/^[\s\S]*?=\s*(\{[\s\S]*\})[\s;]*$/, '$1');
+  // remove trailing semicolons/commas after the closing brace
+  s = s.trim().replace(/;+\s*$/, '');
+  // remove trailing commas before } or ]
+  s = s.replace(/,(\s*[}\]])/g, '$1');
+  // quote unquoted object keys: { key: -> { "key":  and , key: -> , "key":
+  s = s.replace(/([{,]\s*)([A-Za-z_$][A-Za-z0-9_$]*)(\s*:)/g, '$1"$2"$3');
+  return s;
 }
 
-function importData(file){
-  const reader = new FileReader();
-  reader.onload = async (e)=>{
-    try{
-      const parsed = JSON.parse(e.target.result);
-      state = {
-        stores: parsed.stores || [],
-        products: parsed.products || [],
-        records: parsed.records || []
-      };
-      renderAll();
-      await saveState();
-      showToast('已匯入資料');
-    }catch(err){
-      showToast('檔案格式錯誤,匯入失敗');
-      console.error(err);
-    }
-  };
-  reader.readAsText(file);
-}
+document.getElementById('btn-save-config').onclick = ()=>{
+  const raw = document.getElementById('firebase-config').value.trim();
+  if(!raw){ showToast('請貼上設定內容'); return; }
+  const normalized = normalizeConfigInput(raw);
+  try{
+    JSON.parse(normalized);
+    localStorage.setItem(CONFIG_KEY, normalized);
+    document.getElementById('firebase-config').value = normalized;
+    showToast('設定已儲存，連線中...');
+    tryConnect();
+  }catch(e){
+    console.error(e);
+    showToast('格式無法辨識，請確認貼上的內容是完整的 firebaseConfig');
+  }
+};
 
+// load existing config text into textarea for convenience
+(function(){
+  const raw = localStorage.getItem(CONFIG_KEY);
+  if(raw){ document.getElementById('firebase-config').value = raw; }
+})();
+
+// ---------- Rendering ----------
 function renderAll(){
+  renderBuyerOptions();
   renderStoreOptions();
-  renderProductOptions();
+  renderProductOptionsForRecord();
+  renderNPStoreOptions();
   renderStoreList();
   renderProductList();
-  renderRecords();
+  renderBuyerList();
+  updatePriceDisplay();
+  renderLedger();
+}
+
+function renderBuyerOptions(){
+  const sel = document.getElementById('f-buyer');
+  sel.innerHTML = state.buyers.length
+    ? state.buyers.map(b=>`<option value="${b.id}">${escapeHtml(b.name)}</option>`).join('')
+    : '<option value="">尚無買家，請先新增</option>';
 }
 
 function renderStoreOptions(){
   const sel = document.getElementById('f-store');
-  sel.innerHTML = '';
-  if(state.stores.length === 0){
-    sel.innerHTML = '<option value="">尚無商店,請先新增</option>';
-    return;
-  }
-  state.stores.forEach(s=>{
-    const opt = document.createElement('option');
-    opt.value = s.id; opt.textContent = s.name;
-    sel.appendChild(opt);
-  });
+  sel.innerHTML = state.stores.length
+    ? state.stores.map(s=>`<option value="${s.id}">${escapeHtml(s.name)}</option>`).join('')
+    : '<option value="">尚無店家，請先新增</option>';
 }
 
-function renderProductOptions(){
+function renderNPStoreOptions(){
+  const sel = document.getElementById('np-store');
+  sel.innerHTML = state.stores.length
+    ? state.stores.map(s=>`<option value="${s.id}">${escapeHtml(s.name)}</option>`).join('')
+    : '<option value="">請先新增店家</option>';
+}
+
+function renderProductOptionsForRecord(){
+  const storeId = document.getElementById('f-store').value;
   const sel = document.getElementById('f-product');
-  sel.innerHTML = '';
-  if(state.products.length === 0){
-    sel.innerHTML = '<option value="">尚無商品,請先新增</option>';
-    return;
-  }
-  state.products.forEach(p=>{
-    const opt = document.createElement('option');
-    opt.value = p.id; opt.textContent = p.name;
-    sel.appendChild(opt);
-  });
+  const list = state.products.filter(p=>p.storeId === storeId);
+  sel.innerHTML = list.length
+    ? list.map(p=>`<option value="${p.id}">${escapeHtml(p.name)}</option>`).join('')
+    : '<option value="">此店家尚無商品</option>';
+}
+
+function updatePriceDisplay(){
+  const productId = document.getElementById('f-product').value;
+  const product = state.products.find(p=>p.id===productId);
+  const jpy = product ? Number(product.priceJPY||0) : 0;
+  document.getElementById('disp-jpy').textContent = fmtJPY(jpy);
+  document.getElementById('disp-twd').textContent = fmtTWD(jpy);
 }
 
 function renderStoreList(){
   const list = document.getElementById('store-list');
-  list.innerHTML = '';
-  state.stores.forEach(s=>{
-    const row = document.createElement('div');
-    row.className = 'opt-row';
-    row.innerHTML = `<span>${escapeHtml(s.name)}</span><button data-id="${s.id}">刪除</button>`;
-    row.querySelector('button').onclick = ()=> deleteStore(s.id);
-    list.appendChild(row);
+  list.innerHTML = state.stores.map(s=>`
+    <div class="opt-row">
+      <span class="name">${escapeHtml(s.name)}</span>
+      <button data-id="${s.id}">刪除</button>
+    </div>`).join('');
+  list.querySelectorAll('button').forEach(btn=>{
+    btn.onclick = ()=> deleteStore(btn.dataset.id);
   });
 }
 
 function renderProductList(){
   const list = document.getElementById('product-list');
-  list.innerHTML = '';
-  state.products.forEach(p=>{
-    const row = document.createElement('div');
-    row.className = 'opt-row';
-    const thumb = p.image
-      ? `<img src="${escapeAttr(p.image)}" alt="">`
-      : `<div class="thumb-empty"></div>`;
-    row.innerHTML = `${thumb}<span>${escapeHtml(p.name)}</span><button data-id="${p.id}">刪除</button>`;
-    row.querySelector('button').onclick = ()=> deleteProduct(p.id);
-    list.appendChild(row);
+  list.innerHTML = state.products.map(p=>{
+    const store = state.stores.find(s=>s.id===p.storeId);
+    const thumb = p.image ? `<img src="${escapeHtml(p.image)}" alt="">` : `<div class="thumb-empty"></div>`;
+    return `<div class="opt-row">
+      ${thumb}
+      <span class="name">${escapeHtml(p.name)} <span class="sub">(${escapeHtml(store?store.name:'未知店家')} · ${fmtJPY(p.priceJPY)} / ${fmtTWD(p.priceJPY)})</span></span>
+      <button data-id="${p.id}">刪除</button>
+    </div>`;
+  }).join('');
+  list.querySelectorAll('button').forEach(btn=>{
+    btn.onclick = ()=> deleteProduct(btn.dataset.id);
   });
 }
 
-function renderRecords(){
-  const wrap = document.getElementById('records');
-  wrap.innerHTML = '';
-  if(state.records.length === 0){
-    wrap.innerHTML = '<div class="empty-state">還沒有任何購買紀錄</div>';
+function renderBuyerList(){
+  const list = document.getElementById('buyer-list');
+  list.innerHTML = state.buyers.map(b=>`
+    <div class="opt-row">
+      <span class="name">${escapeHtml(b.name)}</span>
+      <button data-id="${b.id}">刪除</button>
+    </div>`).join('');
+  list.querySelectorAll('button').forEach(btn=>{
+    btn.onclick = ()=> deleteBuyer(btn.dataset.id);
+  });
+}
+
+function renderLedger(){
+  const mode = document.getElementById('filter-mode').value;
+  const valueSel = document.getElementById('filter-value');
+  if(mode === 'all'){
+    valueSel.style.display = 'none';
+  } else {
+    valueSel.style.display = '';
+    const options = mode === 'store' ? state.stores : state.buyers;
+    const prevVal = valueSel.value;
+    valueSel.innerHTML = options.map(o=>`<option value="${o.id}">${escapeHtml(o.name)}</option>`).join('');
+    if(options.some(o=>o.id===prevVal)){ valueSel.value = prevVal; }
+  }
+
+  let records = [...state.records];
+  if(mode === 'store'){
+    const val = valueSel.value;
+    records = records.filter(r=>r.storeId === val);
+  } else if(mode === 'buyer'){
+    const val = valueSel.value;
+    records = records.filter(r=>r.buyerId === val);
+  }
+  records.sort((a,b)=>(b.ts||0)-(a.ts||0));
+
+  const wrap = document.getElementById('ledger-wrap');
+  if(records.length === 0){
+    wrap.innerHTML = '<div class="empty-state">沒有符合條件的紀錄</div>';
     return;
   }
-  [...state.records].reverse().forEach(r=>{
+
+  let totalJPY = 0;
+  const rows = records.map(r=>{
+    const buyer = state.buyers.find(b=>b.id===r.buyerId);
     const store = state.stores.find(s=>s.id===r.storeId);
     const product = state.products.find(p=>p.id===r.productId);
-    const ticket = document.createElement('div');
-    ticket.className = 'ticket' + (r.paid?' paid':'') + (r.success?' success':'');
-    const thumb = product && product.image
-      ? `<img class="thumb" src="${escapeAttr(product.image)}" alt="">`
-      : `<div class="thumb-empty"></div>`;
-    ticket.innerHTML = `
-      ${thumb}
-      <div class="ticket-body">
-        <div class="ticket-top">
-          <div class="ticket-buyer">${escapeHtml(r.buyer || '未填買家')}</div>
-          <div class="ticket-price">NT$ ${Number(r.price||0).toLocaleString()}</div>
-        </div>
-        <div class="ticket-meta">${escapeHtml(store?store.name:'未知商店')} · ${escapeHtml(product?product.name:'未知商品')}</div>
-        <div class="stamps">
-          <span class="stamp ${r.paid?'on paid':'off'}">${r.paid?'已匯款':'未匯款'}</span>
-          <span class="stamp ${r.success?'on success':'off'}">${r.success?'購買成功':'未成功'}</span>
-        </div>
-      </div>
-      <div class="ticket-actions">
-        <button class="icon-btn del" title="刪除">✕</button>
-      </div>
-    `;
-    ticket.querySelector('.icon-btn.del').onclick = ()=> deleteRecord(r.id);
-    wrap.appendChild(ticket);
+    totalJPY += Number(r.priceJPY||0);
+    return `<tr data-id="${r.id}">
+      <td>${escapeHtml(buyer?buyer.name:'未知')}</td>
+      <td>${escapeHtml(store?store.name:'未知')}</td>
+      <td>${escapeHtml(product?product.name:'未知')}</td>
+      <td class="num">${fmtJPY(r.priceJPY)}</td>
+      <td class="num">${fmtTWD(r.priceJPY)}</td>
+      <td class="chk"><input type="checkbox" class="chk-paid" ${r.paid?'checked':''}></td>
+      <td class="chk"><input type="checkbox" class="chk-success" ${r.success?'checked':''}></td>
+      <td class="del-cell"><button class="del-record">✕</button></td>
+    </tr>`;
+  }).join('');
+
+  wrap.innerHTML = `
+    <div style="overflow-x:auto;">
+    <table class="ledger">
+      <thead>
+        <tr>
+          <th>買家</th><th>店家</th><th>商品</th><th>日幣</th><th>台幣</th><th>匯款</th><th>成功</th><th></th>
+        </tr>
+      </thead>
+      <tbody>${rows}</tbody>
+      <tfoot>
+        <tr><td colspan="3">合計</td><td class="num">${fmtJPY(totalJPY)}</td><td class="num">${fmtTWD(totalJPY)}</td><td colspan="3"></td></tr>
+      </tfoot>
+    </table>
+    </div>`;
+
+  wrap.querySelectorAll('tr[data-id]').forEach(tr=>{
+    const id = tr.dataset.id;
+    tr.querySelector('.chk-paid').onchange = (e)=> updateRecordFlag(id, 'paid', e.target.checked);
+    tr.querySelector('.chk-success').onchange = (e)=> updateRecordFlag(id, 'success', e.target.checked);
+    tr.querySelector('.del-record').onclick = ()=> deleteRecord(id);
   });
 }
 
-function escapeHtml(str){
-  return String(str).replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
-}
-function escapeAttr(str){ return escapeHtml(str); }
-
+// ---------- Mutations ----------
 async function addStore(){
   const input = document.getElementById('new-store');
   const name = input.value.trim();
-  if(!name){ showToast('請輸入商店名稱'); return; }
+  if(!name){ showToast('請輸入店家名稱'); return; }
   state.stores.push({ id: uid(), name });
   input.value = '';
   renderAll();
   await saveState();
-  showToast('已新增商店');
+  showToast('已新增店家');
 }
-
 async function deleteStore(id){
   state.stores = state.stores.filter(s=>s.id!==id);
+  state.products = state.products.filter(p=>p.storeId!==id);
   renderAll();
   await saveState();
 }
 
 async function addProduct(){
+  const storeId = document.getElementById('np-store').value;
   const nameInput = document.getElementById('new-product');
   const imgInput = document.getElementById('new-product-img');
+  const priceInput = document.getElementById('new-product-price');
   const name = nameInput.value.trim();
   const image = imgInput.value.trim();
+  const priceJPY = Number(priceInput.value || 0);
+  if(!storeId){ showToast('請先新增店家'); return; }
   if(!name){ showToast('請輸入商品名稱'); return; }
-  state.products.push({ id: uid(), name, image });
-  nameInput.value = ''; imgInput.value = '';
+  state.products.push({ id: uid(), storeId, name, image, priceJPY });
+  nameInput.value = ''; imgInput.value = ''; priceInput.value = '';
   renderAll();
   await saveState();
   showToast('已新增商品');
 }
-
 async function deleteProduct(id){
   state.products = state.products.filter(p=>p.id!==id);
   renderAll();
   await saveState();
 }
 
+async function addBuyer(){
+  const input = document.getElementById('new-buyer');
+  const name = input.value.trim();
+  if(!name){ showToast('請輸入買家名稱'); return; }
+  state.buyers.push({ id: uid(), name });
+  input.value = '';
+  renderAll();
+  await saveState();
+  showToast('已新增買家');
+}
+async function deleteBuyer(id){
+  state.buyers = state.buyers.filter(b=>b.id!==id);
+  renderAll();
+  await saveState();
+}
+
 async function addRecord(){
-  const buyer = document.getElementById('f-buyer').value.trim();
+  const buyerId = document.getElementById('f-buyer').value;
   const storeId = document.getElementById('f-store').value;
   const productId = document.getElementById('f-product').value;
-  const price = document.getElementById('f-price').value;
-  const paid = document.getElementById('f-paid').checked;
-  const success = document.getElementById('f-success').checked;
-
-  if(!buyer){ showToast('請輸入買家名稱'); return; }
-  if(!storeId){ showToast('請先新增並選擇商店'); return; }
+  if(!buyerId){ showToast('請先新增並選擇買家'); return; }
+  if(!storeId){ showToast('請先新增並選擇店家'); return; }
   if(!productId){ showToast('請先新增並選擇商品'); return; }
-
+  const product = state.products.find(p=>p.id===productId);
   state.records.push({
-    id: uid(), buyer, storeId, productId,
-    price: price ? Number(price) : 0,
-    paid, success
+    id: uid(), buyerId, storeId, productId,
+    priceJPY: product ? Number(product.priceJPY||0) : 0,
+    paid: false, success: false, ts: Date.now()
   });
-
-  document.getElementById('f-buyer').value = '';
-  document.getElementById('f-price').value = '';
-  document.getElementById('f-paid').checked = false;
-  document.getElementById('f-success').checked = false;
-
   renderAll();
   await saveState();
   showToast('已加入紀錄');
+}
+
+async function updateRecordFlag(id, field, value){
+  const rec = state.records.find(r=>r.id===id);
+  if(!rec) return;
+  rec[field] = value;
+  await saveState();
 }
 
 async function deleteRecord(id){
@@ -649,16 +593,15 @@ async function deleteRecord(id){
   await saveState();
 }
 
+// ---------- Events ----------
 document.getElementById('btn-add-store').onclick = addStore;
 document.getElementById('btn-add-product').onclick = addProduct;
+document.getElementById('btn-add-buyer').onclick = addBuyer;
 document.getElementById('btn-add-record').onclick = addRecord;
-document.getElementById('btn-export').onclick = exportData;
-document.getElementById('import-file').onchange = (e)=>{
-  if(e.target.files && e.target.files[0]){
-    importData(e.target.files[0]);
-    e.target.value = '';
-  }
-};
+document.getElementById('f-store').addEventListener('change', ()=>{ renderProductOptionsForRecord(); updatePriceDisplay(); });
+document.getElementById('f-product').addEventListener('change', updatePriceDisplay);
+document.getElementById('filter-mode').addEventListener('change', renderLedger);
+document.getElementById('filter-value').addEventListener('change', renderLedger);
 
 document.querySelectorAll('.tab-btn').forEach(btn=>{
   btn.onclick = ()=>{
@@ -666,10 +609,12 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
     btn.classList.add('active');
     document.getElementById('panel-' + btn.dataset.tab).classList.add('active');
+    if(btn.dataset.tab === 'reconcile'){ renderLedger(); }
   };
 });
 
-loadState();
+renderAll();
+tryConnect();
 </script>
 </body>
 </html>
