@@ -150,9 +150,12 @@
         </div>
       </div>
 
+      <label for="f-qty">數量</label>
+      <input type="number" id="f-qty" value="1" min="1" step="1">
+
       <div class="price-display">
-        <div><span class="lbl">日幣</span><span id="disp-jpy">¥ 0</span></div>
-        <div><span class="lbl">台幣(x0.25)</span><span id="disp-twd">NT$ 0</span></div>
+        <div><span class="lbl">日幣(單價 x 數量)</span><span id="disp-jpy">¥ 0</span></div>
+        <div><span class="lbl">台幣(x0.25，進位到5)</span><span id="disp-twd">NT$ 0</span></div>
       </div>
 
       <button class="primary" id="btn-add-record">加入紀錄</button>
@@ -193,8 +196,9 @@
       <select id="np-store"></select>
       <label for="new-product">商品名稱</label>
       <input type="text" id="new-product" placeholder="輸入商品名稱">
-      <label for="new-product-img">商品圖片網址(選填)</label>
-      <input type="text" id="new-product-img" placeholder="https://...">
+      <label for="new-product-img">商品圖片(選填，可從相簿或檔案選取)</label>
+      <input type="file" id="new-product-img" accept="image/*">
+      <div id="new-product-img-preview" style="margin-top:8px;"></div>
       <label for="new-product-price">商品價格(日幣 ¥)</label>
       <input type="number" id="new-product-price" placeholder="0" min="0">
       <button class="primary" id="btn-add-product">新增商品</button>
@@ -404,9 +408,11 @@ function renderProductOptionsForRecord(){
 function updatePriceDisplay(){
   const productId = document.getElementById('f-product').value;
   const product = state.products.find(p=>p.id===productId);
-  const jpy = product ? Number(product.priceJPY||0) : 0;
-  document.getElementById('disp-jpy').textContent = fmtJPY(jpy);
-  document.getElementById('disp-twd').textContent = fmtTWD(jpy);
+  const unit = product ? Number(product.priceJPY||0) : 0;
+  const qty = Math.max(1, Number(document.getElementById('f-qty').value || 1));
+  const total = unit * qty;
+  document.getElementById('disp-jpy').textContent = fmtJPY(total);
+  document.getElementById('disp-twd').textContent = fmtTWD(total);
 }
 
 function renderStoreList(){
@@ -484,14 +490,17 @@ function renderLedger(){
     const buyer = state.buyers.find(b=>b.id===r.buyerId);
     const store = state.stores.find(s=>s.id===r.storeId);
     const product = state.products.find(p=>p.id===r.productId);
-    totalJPY += Number(r.priceJPY||0);
-    totalTWD += roundUpTo5(Number(r.priceJPY||0)*RATE);
+    const qty = Math.max(1, Number(r.qty||1));
+    const lineJPY = Number(r.priceJPY||0) * qty;
+    totalJPY += lineJPY;
+    totalTWD += roundUpTo5(lineJPY*RATE);
     return `<tr data-id="${r.id}">
       <td>${escapeHtml(buyer?buyer.name:'未知')}</td>
       <td>${escapeHtml(store?store.name:'未知')}</td>
       <td>${escapeHtml(product?product.name:'未知')}</td>
-      <td class="num">${fmtJPY(r.priceJPY)}</td>
-      <td class="num">${fmtTWD(r.priceJPY)}</td>
+      <td class="num">x${qty}</td>
+      <td class="num">${fmtJPY(lineJPY)}</td>
+      <td class="num">${fmtTWD(lineJPY)}</td>
       <td class="chk"><input type="checkbox" class="chk-paid" ${r.paid?'checked':''}></td>
       <td class="chk"><input type="checkbox" class="chk-success" ${r.success?'checked':''}></td>
       <td class="del-cell"><button class="del-record">✕</button></td>
@@ -503,12 +512,12 @@ function renderLedger(){
     <table class="ledger">
       <thead>
         <tr>
-          <th>買家</th><th>店家</th><th>商品</th><th>日幣</th><th>台幣</th><th>匯款</th><th>成功</th><th></th>
+          <th>買家</th><th>店家</th><th>商品</th><th>數量</th><th>日幣</th><th>台幣</th><th>匯款</th><th>成功</th><th></th>
         </tr>
       </thead>
       <tbody>${rows}</tbody>
       <tfoot>
-        <tr><td colspan="3">合計</td><td class="num">${fmtJPY(totalJPY)}</td><td class="num">NT$ ${totalTWD.toLocaleString()}</td><td colspan="3"></td></tr>
+        <tr><td colspan="4">合計</td><td class="num">${fmtJPY(totalJPY)}</td><td class="num">NT$ ${totalTWD.toLocaleString()}</td><td colspan="3"></td></tr>
       </tfoot>
     </table>
     </div>`;
@@ -539,18 +548,58 @@ async function deleteStore(id){
   await saveState();
 }
 
+function resizeImageFile(file, maxDim){
+  return new Promise((resolve, reject)=>{
+    const reader = new FileReader();
+    reader.onerror = ()=> reject(reader.error);
+    reader.onload = (e)=>{
+      const img = new Image();
+      img.onerror = ()=> reject(new Error('圖片讀取失敗'));
+      img.onload = ()=>{
+        let { width, height } = img;
+        if(width > maxDim || height > maxDim){
+          if(width > height){ height = Math.round(height * maxDim / width); width = maxDim; }
+          else { width = Math.round(width * maxDim / height); height = maxDim; }
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = width; canvas.height = height;
+        canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+        resolve(canvas.toDataURL('image/jpeg', 0.75));
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+document.getElementById('new-product-img').addEventListener('change', async (e)=>{
+  const file = e.target.files && e.target.files[0];
+  const preview = document.getElementById('new-product-img-preview');
+  if(!file){ preview.innerHTML = ''; return; }
+  try{
+    const dataUrl = await resizeImageFile(file, 400);
+    preview.innerHTML = `<img src="${dataUrl}" style="width:64px;height:64px;object-fit:cover;border-radius:6px;border:1px solid var(--line);">`;
+    preview.dataset.dataurl = dataUrl;
+  }catch(err){
+    console.error(err);
+    showToast('圖片讀取失敗，請換一張試試');
+  }
+});
+
 async function addProduct(){
   const storeId = document.getElementById('np-store').value;
   const nameInput = document.getElementById('new-product');
   const imgInput = document.getElementById('new-product-img');
   const priceInput = document.getElementById('new-product-price');
+  const preview = document.getElementById('new-product-img-preview');
   const name = nameInput.value.trim();
-  const image = imgInput.value.trim();
+  const image = preview.dataset.dataurl || '';
   const priceJPY = Number(priceInput.value || 0);
   if(!storeId){ showToast('請先新增店家'); return; }
   if(!name){ showToast('請輸入商品名稱'); return; }
   state.products.push({ id: uid(), storeId, name, image, priceJPY });
   nameInput.value = ''; imgInput.value = ''; priceInput.value = '';
+  preview.innerHTML = ''; delete preview.dataset.dataurl;
   renderAll();
   await saveState();
   showToast('已新增商品');
@@ -581,6 +630,7 @@ async function addRecord(){
   const buyerId = document.getElementById('f-buyer').value;
   const storeId = document.getElementById('f-store').value;
   const productId = document.getElementById('f-product').value;
+  const qty = Math.max(1, Number(document.getElementById('f-qty').value || 1));
   if(!buyerId){ showToast('請先新增並選擇買家'); return; }
   if(!storeId){ showToast('請先新增並選擇店家'); return; }
   if(!productId){ showToast('請先新增並選擇商品'); return; }
@@ -588,8 +638,10 @@ async function addRecord(){
   state.records.push({
     id: uid(), buyerId, storeId, productId,
     priceJPY: product ? Number(product.priceJPY||0) : 0,
+    qty,
     paid: false, success: false, ts: Date.now()
   });
+  document.getElementById('f-qty').value = 1;
   renderAll();
   await saveState();
   showToast('已加入紀錄');
@@ -615,6 +667,7 @@ document.getElementById('btn-add-buyer').onclick = addBuyer;
 document.getElementById('btn-add-record').onclick = addRecord;
 document.getElementById('f-store').addEventListener('change', ()=>{ renderProductOptionsForRecord(); updatePriceDisplay(); });
 document.getElementById('f-product').addEventListener('change', updatePriceDisplay);
+document.getElementById('f-qty').addEventListener('input', updatePriceDisplay);
 document.getElementById('filter-mode').addEventListener('change', renderLedger);
 document.getElementById('filter-value').addEventListener('change', renderLedger);
 
