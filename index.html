@@ -60,7 +60,7 @@
   input:focus, select:focus, textarea:focus{ outline:2px solid var(--ink); outline-offset:1px; }
   .row2{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
   .price-display{
-    display:flex; gap:14px; margin-top:12px; padding:10px 12px;
+    display:flex; gap:14px; margin-top:12px; padding:10px 12px; align-items:center;
     background:var(--paper-dark); border-radius:6px; font-family:'Courier Prime', monospace;
     font-size:14px; font-weight:700;
   }
@@ -154,6 +154,7 @@
       <input type="number" id="f-qty" value="1" min="1" step="1">
 
       <div class="price-display">
+        <img id="f-product-thumb" style="width:44px;height:44px;object-fit:cover;border-radius:6px;border:1px solid var(--line);display:none;" alt="">
         <div><span class="lbl">日幣(單價 x 數量)</span><span id="disp-jpy">¥ 0</span></div>
         <div><span class="lbl">台幣(x0.25，進位到5)</span><span id="disp-twd">NT$ 0</span></div>
       </div>
@@ -413,34 +414,138 @@ function updatePriceDisplay(){
   const total = unit * qty;
   document.getElementById('disp-jpy').textContent = fmtJPY(total);
   document.getElementById('disp-twd').textContent = fmtTWD(total);
+  const thumb = document.getElementById('f-product-thumb');
+  if(product && product.image){
+    thumb.src = product.image;
+    thumb.style.display = '';
+  } else {
+    thumb.style.display = 'none';
+    thumb.removeAttribute('src');
+  }
 }
+
+let editingStoreId = null;
+let editingProductId = null;
+let editingProductNewImage = null; // holds new dataURL if user replaces image while editing
 
 function renderStoreList(){
   const list = document.getElementById('store-list');
-  list.innerHTML = state.stores.map(s=>`
-    <div class="opt-row">
+  list.innerHTML = state.stores.map(s=>{
+    if(editingStoreId === s.id){
+      return `<div class="opt-row" style="flex-wrap:wrap;">
+        <input type="text" class="edit-store-name" value="${escapeHtml(s.name)}" style="flex:1; min-width:120px;">
+        <button data-action="save" data-id="${s.id}">儲存</button>
+        <button data-action="cancel">取消</button>
+      </div>`;
+    }
+    return `<div class="opt-row">
       <span class="name">${escapeHtml(s.name)}</span>
-      <button data-id="${s.id}">刪除</button>
-    </div>`).join('');
+      <button data-action="edit" data-id="${s.id}">編輯</button>
+      <button data-action="delete" data-id="${s.id}">刪除</button>
+    </div>`;
+  }).join('');
   list.querySelectorAll('button').forEach(btn=>{
-    btn.onclick = ()=> deleteStore(btn.dataset.id);
+    const id = btn.dataset.id;
+    const action = btn.dataset.action;
+    if(action === 'edit'){ btn.onclick = ()=>{ editingStoreId = id; renderStoreList(); }; }
+    else if(action === 'cancel'){ btn.onclick = ()=>{ editingStoreId = null; renderStoreList(); }; }
+    else if(action === 'delete'){ btn.onclick = ()=> deleteStore(id); }
+    else if(action === 'save'){ btn.onclick = ()=> saveStoreEdit(id); }
   });
+}
+
+async function saveStoreEdit(id){
+  const row = document.querySelector(`.opt-row input.edit-store-name`);
+  const name = row ? row.value.trim() : '';
+  if(!name){ showToast('店家名稱不可空白'); return; }
+  const store = state.stores.find(s=>s.id===id);
+  if(store){ store.name = name; }
+  editingStoreId = null;
+  renderAll();
+  await saveState();
+  showToast('已更新店家');
 }
 
 function renderProductList(){
   const list = document.getElementById('product-list');
   list.innerHTML = state.products.map(p=>{
     const store = state.stores.find(s=>s.id===p.storeId);
+    if(editingProductId === p.id){
+      const storeOptions = state.stores.map(s=>`<option value="${s.id}" ${s.id===p.storeId?'selected':''}>${escapeHtml(s.name)}</option>`).join('');
+      const currentThumb = p.image ? `<img src="${escapeHtml(p.image)}" style="width:32px;height:32px;object-fit:cover;border-radius:4px;border:1px solid var(--line);">` : `<div class="thumb-empty"></div>`;
+      return `<div class="opt-row" style="flex-wrap:wrap; align-items:flex-start; padding:10px 8px;">
+        <div style="flex:1 1 100%; display:flex; flex-direction:column; gap:8px;">
+          <select class="edit-product-store">${storeOptions}</select>
+          <input type="text" class="edit-product-name" value="${escapeHtml(p.name)}" placeholder="商品名稱">
+          <input type="number" class="edit-product-price" value="${Number(p.priceJPY||0)}" min="0" placeholder="日幣價格">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span id="edit-product-thumb-${p.id}">${currentThumb}</span>
+            <input type="file" class="edit-product-img" accept="image/*" style="flex:1;">
+          </div>
+          <div style="display:flex; gap:8px;">
+            <button data-action="save" data-id="${p.id}">儲存</button>
+            <button data-action="cancel">取消</button>
+          </div>
+        </div>
+      </div>`;
+    }
     const thumb = p.image ? `<img src="${escapeHtml(p.image)}" alt="">` : `<div class="thumb-empty"></div>`;
     return `<div class="opt-row">
       ${thumb}
       <span class="name">${escapeHtml(p.name)} <span class="sub">(${escapeHtml(store?store.name:'未知店家')} · ${fmtJPY(p.priceJPY)} / ${fmtTWD(p.priceJPY)})</span></span>
-      <button data-id="${p.id}">刪除</button>
+      <button data-action="edit" data-id="${p.id}">編輯</button>
+      <button data-action="delete" data-id="${p.id}">刪除</button>
     </div>`;
   }).join('');
   list.querySelectorAll('button').forEach(btn=>{
-    btn.onclick = ()=> deleteProduct(btn.dataset.id);
+    const id = btn.dataset.id;
+    const action = btn.dataset.action;
+    if(action === 'edit'){ btn.onclick = ()=>{ editingProductId = id; editingProductNewImage = null; renderProductList(); }; }
+    else if(action === 'cancel'){ btn.onclick = ()=>{ editingProductId = null; editingProductNewImage = null; renderProductList(); }; }
+    else if(action === 'delete'){ btn.onclick = ()=> deleteProduct(id); }
+    else if(action === 'save'){ btn.onclick = ()=> saveProductEdit(id); }
   });
+  const imgInput = list.querySelector('.edit-product-img');
+  if(imgInput){
+    imgInput.addEventListener('change', async (e)=>{
+      const file = e.target.files && e.target.files[0];
+      if(!file) return;
+      try{
+        editingProductNewImage = await resizeImageFile(file, 400);
+        const thumbSpan = document.getElementById(`edit-product-thumb-${editingProductId}`);
+        if(thumbSpan){
+          thumbSpan.innerHTML = `<img src="${editingProductNewImage}" style="width:32px;height:32px;object-fit:cover;border-radius:4px;border:1px solid var(--line);">`;
+        }
+      }catch(err){
+        console.error(err);
+        showToast('圖片讀取失敗，請換一張試試');
+      }
+    });
+  }
+}
+
+async function saveProductEdit(id){
+  const list = document.getElementById('product-list');
+  const storeSel = list.querySelector('.edit-product-store');
+  const nameInput = list.querySelector('.edit-product-name');
+  const priceInput = list.querySelector('.edit-product-price');
+  const name = nameInput ? nameInput.value.trim() : '';
+  const storeId = storeSel ? storeSel.value : '';
+  const priceJPY = priceInput ? Number(priceInput.value || 0) : 0;
+  if(!name){ showToast('商品名稱不可空白'); return; }
+  if(!storeId){ showToast('請選擇所屬店家'); return; }
+  const product = state.products.find(p=>p.id===id);
+  if(product){
+    product.name = name;
+    product.storeId = storeId;
+    product.priceJPY = priceJPY;
+    if(editingProductNewImage){ product.image = editingProductNewImage; }
+  }
+  editingProductId = null;
+  editingProductNewImage = null;
+  renderAll();
+  await saveState();
+  showToast('已更新商品');
 }
 
 function renderBuyerList(){
@@ -494,9 +599,13 @@ function renderLedger(){
     const lineJPY = Number(r.priceJPY||0) * qty;
     totalJPY += lineJPY;
     totalTWD += roundUpTo5(lineJPY*RATE);
+    const thumb = (product && product.image)
+      ? `<img src="${product.image}" style="width:32px;height:32px;object-fit:cover;border-radius:4px;border:1px solid var(--line);">`
+      : `<div style="width:32px;height:32px;border-radius:4px;background:var(--paper-dark);border:1px dashed var(--line);"></div>`;
     return `<tr data-id="${r.id}">
       <td>${escapeHtml(buyer?buyer.name:'未知')}</td>
       <td>${escapeHtml(store?store.name:'未知')}</td>
+      <td>${thumb}</td>
       <td>${escapeHtml(product?product.name:'未知')}</td>
       <td class="num">x${qty}</td>
       <td class="num">${fmtJPY(lineJPY)}</td>
@@ -512,12 +621,12 @@ function renderLedger(){
     <table class="ledger">
       <thead>
         <tr>
-          <th>買家</th><th>店家</th><th>商品</th><th>數量</th><th>日幣</th><th>台幣</th><th>匯款</th><th>成功</th><th></th>
+          <th>買家</th><th>店家</th><th>圖片</th><th>商品</th><th>數量</th><th>日幣</th><th>台幣</th><th>匯款</th><th>成功</th><th></th>
         </tr>
       </thead>
       <tbody>${rows}</tbody>
       <tfoot>
-        <tr><td colspan="4">合計</td><td class="num">${fmtJPY(totalJPY)}</td><td class="num">NT$ ${totalTWD.toLocaleString()}</td><td colspan="3"></td></tr>
+        <tr><td colspan="5">合計</td><td class="num">${fmtJPY(totalJPY)}</td><td class="num">NT$ ${totalTWD.toLocaleString()}</td><td colspan="3"></td></tr>
       </tfoot>
     </table>
     </div>`;
