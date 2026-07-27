@@ -261,7 +261,8 @@ let docRef = null;
 function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
 function escapeHtml(str){ return String(str).replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
 function fmtJPY(n){ return '¥ ' + Number(n||0).toLocaleString(); }
-function fmtTWD(n){ return 'NT$ ' + Math.round(Number(n||0)*RATE).toLocaleString(); }
+function fmtTWD(n){ return 'NT$ ' + roundUpTo5(Number(n||0)*RATE).toLocaleString(); }
+function roundUpTo5(n){ return Math.ceil(n/5)*5; }
 function showToast(msg){
   const t = document.getElementById('toast');
   t.textContent = msg; t.classList.add('show');
@@ -478,11 +479,13 @@ function renderLedger(){
   }
 
   let totalJPY = 0;
+  let totalTWD = 0;
   const rows = records.map(r=>{
     const buyer = state.buyers.find(b=>b.id===r.buyerId);
     const store = state.stores.find(s=>s.id===r.storeId);
     const product = state.products.find(p=>p.id===r.productId);
     totalJPY += Number(r.priceJPY||0);
+    totalTWD += roundUpTo5(Number(r.priceJPY||0)*RATE);
     return `<tr data-id="${r.id}">
       <td>${escapeHtml(buyer?buyer.name:'未知')}</td>
       <td>${escapeHtml(store?store.name:'未知')}</td>
@@ -505,7 +508,7 @@ function renderLedger(){
       </thead>
       <tbody>${rows}</tbody>
       <tfoot>
-        <tr><td colspan="3">合計</td><td class="num">${fmtJPY(totalJPY)}</td><td class="num">${fmtTWD(totalJPY)}</td><td colspan="3"></td></tr>
+        <tr><td colspan="3">合計</td><td class="num">${fmtJPY(totalJPY)}</td><td class="num">NT$ ${totalTWD.toLocaleString()}</td><td colspan="3"></td></tr>
       </tfoot>
     </table>
     </div>`;
