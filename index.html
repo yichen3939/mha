@@ -114,10 +114,47 @@
     table.ledger{ font-size:12px; }
     .row2{ grid-template-columns:1fr; }
   }
+
+  #lock-screen{
+    position:fixed; inset:0; background:var(--paper); z-index:100;
+    display:flex; align-items:center; justify-content:center; padding:20px;
+  }
+  #lock-screen.hidden{ display:none; }
+  .lock-box{
+    background:var(--card); border:1px solid var(--line); border-radius:10px;
+    padding:28px 24px; width:100%; max-width:320px; text-align:center;
+  }
+  .lock-box h1{
+    font-family:'Courier Prime', monospace; font-weight:700;
+    font-size:20px; letter-spacing:2px; margin:0 0 6px;
+  }
+  .lock-box p{ margin:0 0 16px; color:var(--ink-soft); font-size:12px; letter-spacing:1px; }
+  .lock-box input{
+    width:100%; padding:11px 10px; border:1px solid var(--line); border-radius:6px;
+    background:#fff; font-family:'Courier Prime', monospace; font-size:18px; color:var(--ink);
+    text-align:center; letter-spacing:4px;
+  }
+  .lock-box input:focus{ outline:2px solid var(--ink); outline-offset:1px; }
+  .lock-box button{
+    margin-top:14px; width:100%; padding:12px; background:var(--ink); color:var(--paper);
+    border:none; border-radius:6px; font-family:'Courier Prime', monospace;
+    font-weight:700; letter-spacing:1px; font-size:14px; cursor:pointer;
+  }
+  .lock-box .lock-err{ color:var(--stamp-red); font-size:12px; margin-top:10px; min-height:16px; }
+  #app-wrap.hidden{ display:none; }
 </style>
 </head>
 <body>
-<div class="wrap">
+<div id="lock-screen">
+  <div class="lock-box">
+    <h1>採購帳本</h1>
+    <p>請輸入密碼以繼續</p>
+    <input type="password" id="lock-password" inputmode="numeric" maxlength="10" placeholder="請輸入密碼" autocomplete="off">
+    <button id="lock-submit">進入</button>
+    <div class="lock-err" id="lock-err"></div>
+  </div>
+</div>
+<div class="wrap hidden" id="app-wrap">
   <header>
     <h1>採購帳本</h1>
     <p>店家 · 商品 · 買家 · 對帳</p>
@@ -891,8 +928,42 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
   };
 });
 
-renderAll();
-tryConnect();
+const SITE_PASSWORD = '910309';
+const UNLOCK_KEY = 'purchase-tracker-unlocked';
+
+function initApp(){
+  renderAll();
+  tryConnect();
+}
+
+function tryUnlock(){
+  const input = document.getElementById('lock-password');
+  const err = document.getElementById('lock-err');
+  if(input.value.trim() === SITE_PASSWORD){
+    sessionStorage.setItem(UNLOCK_KEY, '1');
+    document.getElementById('lock-screen').classList.add('hidden');
+    document.getElementById('app-wrap').classList.remove('hidden');
+    err.textContent = '';
+    initApp();
+  } else {
+    err.textContent = '密碼錯誤，請再試一次';
+    input.value = '';
+    input.focus();
+  }
+}
+
+document.getElementById('lock-submit').onclick = tryUnlock;
+document.getElementById('lock-password').addEventListener('keydown', (e)=>{
+  if(e.key === 'Enter') tryUnlock();
+});
+
+if(sessionStorage.getItem(UNLOCK_KEY) === '1'){
+  document.getElementById('lock-screen').classList.add('hidden');
+  document.getElementById('app-wrap').classList.remove('hidden');
+  initApp();
+} else {
+  document.getElementById('lock-password').focus();
+}
 </script>
 </body>
 </html>
