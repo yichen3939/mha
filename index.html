@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>採購帳本</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&family=Noto+Sans+TC:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#F1EDE2;
+    --paper-dark:#E4DFCF;
+    --ink:#1B2E28;
+    --ink-soft:#4B5D57;
+    --line:#C9C2AC;
+    --stamp-red:#B23A2E;
+    --stamp-green:#3F7A5E;
+    --stamp-amber:#C08A2E;
+    --card:#FBF9F3;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Noto Sans TC', sans-serif;
+    -webkit-font-smoothing:antialiased;
+    min-height:100vh;
+  }
+  .wrap{
+    max-width:720px;
+    margin:0 auto;
+    padding:28px 16px 80px;
+  }
+  header{
+    text-align:center;
+    margin-bottom:24px;
+    position:relative;
+  }
+  header h1{
+    font-family:'Courier Prime', monospace;
+    font-weight:700;
+    font-size:28px;
+    letter-spacing:2px;
+    margin:0 0 4px;
+  }
+  header p{
+    margin:0;
+    color:var(--ink-soft);
+    font-size:13px;
+    letter-spacing:1px;
+  }
+  .tabs{
+    display:flex;
+    gap:8px;
+    margin-bottom:16px;
+  }
+  .tab-btn{
+    flex:1;
+    padding:10px 8px;
+    border:1px solid var(--line);
+    background:var(--paper-dark);
+    color:var(--ink-soft);
+    font-family:'Noto Sans TC', sans-serif;
+    font-weight:600;
+    font-size:13px;
+    border-radius:6px;
+    cursor:pointer;
+    transition:all .15s ease;
+  }
+  .tab-btn.active{
+    background:var(--ink);
+    color:var(--paper);
+    border-color:var(--ink);
+  }
+  .panel{ display:none; }
+  .panel.active{ display:block; }
+
+  .box{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:18px;
+    margin-bottom:16px;
+  }
+  .box h2{
+    font-size:14px;
+    font-family:'Courier Prime', monospace;
+    letter-spacing:1px;
+    margin:0 0 14px;
+    color:var(--ink-soft);
+    text-transform:uppercase;
+  }
+  label{
+    display:block;
+    font-size:12px;
+    color:var(--ink-soft);
+    margin-bottom:4px;
+    margin-top:12px;
+  }
+  label:first-of-type{ margin-top:0; }
+  input[type=text], input[type=number], select{
+    width:100%;
+    padding:10px 10px;
+    border:1px solid var(--line);
+    border-radius:6px;
+    background:#fff;
+    font-family:'Noto Sans TC', sans-serif;
+    font-size:14px;
+    color:var(--ink);
+  }
+  input:focus, select:focus{
+    outline:2px solid var(--ink);
+    outline-offset:1px;
+  }
+  .row2{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:10px;
+  }
+  .checks{
+    display:flex;
+    gap:20px;
+    margin-top:14px;
+  }
+  .check-item{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-size:13px;
+    color:var(--ink-soft);
+  }
+  .check-item input{ width:18px; height:18px; accent-color:var(--stamp-green); }
+
+  button.primary{
+    margin-top:16px;
+    width:100%;
+    padding:12px;
+    background:var(--ink);
+    color:var(--paper);
+    border:none;
+    border-radius:6px;
+    font-family:'Courier Prime', monospace;
+    font-weight:700;
+    letter-spacing:1px;
+    font-size:14px;
+    cursor:pointer;
+  }
+  button.primary:active{ transform:scale(.98); }
+
+  .opt-add{
+    display:flex;
+    gap:8px;
+  }
+  .opt-add input{ flex:1; }
+  .opt-add button{
+    padding:0 16px;
+    border:none;
+    border-radius:6px;
+    background:var(--ink);
+    color:var(--paper);
+    font-weight:600;
+    cursor:pointer;
+  }
+  .opt-list{
+    margin-top:10px;
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+  }
+  .opt-row{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:6px 8px;
+    background:var(--paper-dark);
+    border-radius:6px;
+    font-size:13px;
+  }
+  .opt-row img{
+    width:32px; height:32px; object-fit:cover; border-radius:4px;
+    border:1px solid var(--line);
+  }
+  .opt-row .thumb-empty{
+    width:32px; height:32px; border-radius:4px;
+    background:var(--card); border:1px dashed var(--line);
+  }
+  .opt-row span{ flex:1; }
+  .opt-row button{
+    background:none; border:none; color:var(--stamp-red);
+    font-size:13px; cursor:pointer; font-weight:600;
+  }
+
+  .records{
+    display:flex;
+    flex-direction:column;
+    gap:14px;
+  }
+  .ticket{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:16px;
+    position:relative;
+    display:flex;
+    gap:14px;
+  }
+  .ticket::before{
+    content:"";
+    position:absolute;
+    left:0; top:0; bottom:0;
+    width:4px;
+    border-radius:10px 0 0 10px;
+    background:var(--line);
+  }
+  .ticket.paid.success::before{ background:var(--stamp-green); }
+  .ticket.paid:not(.success)::before{ background:var(--stamp-amber); }
+  .ticket:not(.paid)::before{ background:var(--stamp-red); }
+
+  .ticket img.thumb{
+    width:56px; height:56px; object-fit:cover; border-radius:8px;
+    border:1px solid var(--line);
+    flex-shrink:0;
+  }
+  .ticket .thumb-empty{
+    width:56px; height:56px; border-radius:8px; flex-shrink:0;
+    background:var(--paper-dark); border:1px dashed var(--line);
+  }
+  .ticket-body{ flex:1; min-width:0; }
+  .ticket-top{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    gap:8px;
+  }
+  .ticket-buyer{
+    font-weight:700;
+    font-size:15px;
+  }
+  .ticket-price{
+    font-family:'Courier Prime', monospace;
+    font-weight:700;
+    font-size:16px;
+    white-space:nowrap;
+  }
+  .ticket-meta{
+    color:var(--ink-soft);
+    font-size:13px;
+    margin-top:2px;
+  }
+  .stamps{
+    display:flex;
+    gap:8px;
+    margin-top:10px;
+  }
+  .stamp{
+    font-size:11px;
+    font-weight:700;
+    padding:3px 8px;
+    border-radius:20px;
+    border:1.5px solid;
+    letter-spacing:.5px;
+  }
+  .stamp.on.paid{ color:var(--stamp-amber); border-color:var(--stamp-amber); }
+  .stamp.on.success{ color:var(--stamp-green); border-color:var(--stamp-green); }
+  .stamp.off{ color:var(--line); border-color:var(--line); }
+
+  .ticket-actions{
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+    align-items:flex-end;
+  }
+  .icon-btn{
+    background:none;
+    border:none;
+    cursor:pointer;
+    font-size:16px;
+    color:var(--ink-soft);
+    padding:2px;
+  }
+  .icon-btn.del{ color:var(--stamp-red); }
+
+  .empty-state{
+    text-align:center;
+    color:var(--ink-soft);
+    font-size:13px;
+    padding:40px 20px;
+    border:1px dashed var(--line);
+    border-radius:10px;
+  }
+
+  .toast{
+    position:fixed;
+    bottom:20px; left:50%;
+    transform:translateX(-50%) translateY(20px);
+    background:var(--ink);
+    color:var(--paper);
+    padding:10px 18px;
+    border-radius:8px;
+    font-size:13px;
+    opacity:0;
+    transition:all .25s ease;
+    pointer-events:none;
+    z-index:50;
+  }
+  .toast.show{
+    opacity:1;
+    transform:translateX(-50%) translateY(0);
+  }
+
+  select{ appearance:none; background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%234B5D57'><path d='M5 7l5 5 5-5z'/></svg>"); background-repeat:no-repeat; background-position:right 10px center; }
+
+  @media (max-width:420px){
+    .ticket{ flex-wrap:wrap; }
+    .ticket-actions{ flex-direction:row; margin-left:auto; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>採購帳本</h1>
+    <p>買家 · 商店 · 商品 · 匯款 · 成功</p>
+  </header>
+
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="record">新增紀錄</button>
+    <button class="tab-btn" data-tab="manage">管理商店 / 商品</button>
+    <button class="tab-btn" data-tab="backup">備份</button>
+  </div>
+
+  <div class="panel active" id="panel-record">
+    <div class="box">
+      <h2>新增購買紀錄</h2>
+      <label for="f-buyer">買家</label>
+      <input type="text" id="f-buyer" placeholder="輸入買家名稱">
+
+      <div class="row2">
+        <div>
+          <label for="f-store">商店</label>
+          <select id="f-store"></select>
+        </div>
+        <div>
+          <label for="f-product">商品</label>
+          <select id="f-product"></select>
+        </div>
+      </div>
+
+      <label for="f-price">價格 (NT$)</label>
+      <input type="number" id="f-price" placeholder="0" min="0">
+
+      <div class="checks">
+        <label class="check-item"><input type="checkbox" id="f-paid"> 已匯款</label>
+        <label class="check-item"><input type="checkbox" id="f-success"> 購買成功</label>
+      </div>
+
+      <button class="primary" id="btn-add-record">加入紀錄</button>
+    </div>
+
+    <div id="records" class="records"></div>
+  </div>
+
+  <div class="panel" id="panel-manage">
+    <div class="box">
+      <h2>商店清單</h2>
+      <div class="opt-add">
+        <input type="text" id="new-store" placeholder="新增商店名稱">
+        <button id="btn-add-store">新增</button>
+      </div>
+      <div class="opt-list" id="store-list"></div>
+    </div>
+
+    <div class="box">
+      <h2>商品清單</h2>
+      <label for="new-product">商品名稱</label>
+      <input type="text" id="new-product" placeholder="輸入商品名稱">
+      <label for="new-product-img">商品圖片網址(選填)</label>
+      <input type="text" id="new-product-img" placeholder="https://...">
+      <button class="primary" id="btn-add-product">新增商品</button>
+      <div class="opt-list" id="product-list"></div>
+    </div>
+  </div>
+
+  <div class="panel" id="panel-backup">
+    <div class="box">
+      <h2>資料備份 / 搬移裝置</h2>
+      <p style="font-size:13px; color:var(--ink-soft); margin:0 0 14px; line-height:1.6;">
+        資料存在這個瀏覽器裡,不會自動同步到其他手機或瀏覽器。
+        要在別的裝置上使用同一份資料,請先「匯出」存成檔案,
+        再到另一個裝置打開這個網頁後「匯入」該檔案。
+      </p>
+      <button class="primary" id="btn-export">匯出資料(下載檔案)</button>
+      <label for="import-file" style="margin-top:16px;">匯入資料(選擇檔案)</label>
+      <input type="file" id="import-file" accept="application/json">
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const STORAGE_KEY = 'tracker-data';
+let state = { stores: [], products: [], records: [] };
+let loaded = false;
+
+function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 1800);
+}
+
+async function loadState(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(raw){
+      state = JSON.parse(raw);
+      state.stores = state.stores || [];
+      state.products = state.products || [];
+      state.records = state.records || [];
+    }
+  }catch(e){
+    console.error(e);
+    // parsing failed or storage unavailable, keep default state
+  }
+  loaded = true;
+  renderAll();
+}
+
+async function saveState(){
+  try{
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  }catch(e){
+    showToast('儲存發生錯誤,瀏覽器儲存空間可能已滿');
+    console.error(e);
+  }
+}
+
+function exportData(){
+  const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const date = new Date().toISOString().slice(0,10);
+  a.href = url;
+  a.download = `採購帳本備份-${date}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast('已下載備份檔案');
+}
+
+function importData(file){
+  const reader = new FileReader();
+  reader.onload = async (e)=>{
+    try{
+      const parsed = JSON.parse(e.target.result);
+      state = {
+        stores: parsed.stores || [],
+        products: parsed.products || [],
+        records: parsed.records || []
+      };
+      renderAll();
+      await saveState();
+      showToast('已匯入資料');
+    }catch(err){
+      showToast('檔案格式錯誤,匯入失敗');
+      console.error(err);
+    }
+  };
+  reader.readAsText(file);
+}
+
+function renderAll(){
+  renderStoreOptions();
+  renderProductOptions();
+  renderStoreList();
+  renderProductList();
+  renderRecords();
+}
+
+function renderStoreOptions(){
+  const sel = document.getElementById('f-store');
+  sel.innerHTML = '';
+  if(state.stores.length === 0){
+    sel.innerHTML = '<option value="">尚無商店,請先新增</option>';
+    return;
+  }
+  state.stores.forEach(s=>{
+    const opt = document.createElement('option');
+    opt.value = s.id; opt.textContent = s.name;
+    sel.appendChild(opt);
+  });
+}
+
+function renderProductOptions(){
+  const sel = document.getElementById('f-product');
+  sel.innerHTML = '';
+  if(state.products.length === 0){
+    sel.innerHTML = '<option value="">尚無商品,請先新增</option>';
+    return;
+  }
+  state.products.forEach(p=>{
+    const opt = document.createElement('option');
+    opt.value = p.id; opt.textContent = p.name;
+    sel.appendChild(opt);
+  });
+}
+
+function renderStoreList(){
+  const list = document.getElementById('store-list');
+  list.innerHTML = '';
+  state.stores.forEach(s=>{
+    const row = document.createElement('div');
+    row.className = 'opt-row';
+    row.innerHTML = `<span>${escapeHtml(s.name)}</span><button data-id="${s.id}">刪除</button>`;
+    row.querySelector('button').onclick = ()=> deleteStore(s.id);
+    list.appendChild(row);
+  });
+}
+
+function renderProductList(){
+  const list = document.getElementById('product-list');
+  list.innerHTML = '';
+  state.products.forEach(p=>{
+    const row = document.createElement('div');
+    row.className = 'opt-row';
+    const thumb = p.image
+      ? `<img src="${escapeAttr(p.image)}" alt="">`
+      : `<div class="thumb-empty"></div>`;
+    row.innerHTML = `${thumb}<span>${escapeHtml(p.name)}</span><button data-id="${p.id}">刪除</button>`;
+    row.querySelector('button').onclick = ()=> deleteProduct(p.id);
+    list.appendChild(row);
+  });
+}
+
+function renderRecords(){
+  const wrap = document.getElementById('records');
+  wrap.innerHTML = '';
+  if(state.records.length === 0){
+    wrap.innerHTML = '<div class="empty-state">還沒有任何購買紀錄</div>';
+    return;
+  }
+  [...state.records].reverse().forEach(r=>{
+    const store = state.stores.find(s=>s.id===r.storeId);
+    const product = state.products.find(p=>p.id===r.productId);
+    const ticket = document.createElement('div');
+    ticket.className = 'ticket' + (r.paid?' paid':'') + (r.success?' success':'');
+    const thumb = product && product.image
+      ? `<img class="thumb" src="${escapeAttr(product.image)}" alt="">`
+      : `<div class="thumb-empty"></div>`;
+    ticket.innerHTML = `
+      ${thumb}
+      <div class="ticket-body">
+        <div class="ticket-top">
+          <div class="ticket-buyer">${escapeHtml(r.buyer || '未填買家')}</div>
+          <div class="ticket-price">NT$ ${Number(r.price||0).toLocaleString()}</div>
+        </div>
+        <div class="ticket-meta">${escapeHtml(store?store.name:'未知商店')} · ${escapeHtml(product?product.name:'未知商品')}</div>
+        <div class="stamps">
+          <span class="stamp ${r.paid?'on paid':'off'}">${r.paid?'已匯款':'未匯款'}</span>
+          <span class="stamp ${r.success?'on success':'off'}">${r.success?'購買成功':'未成功'}</span>
+        </div>
+      </div>
+      <div class="ticket-actions">
+        <button class="icon-btn del" title="刪除">✕</button>
+      </div>
+    `;
+    ticket.querySelector('.icon-btn.del').onclick = ()=> deleteRecord(r.id);
+    wrap.appendChild(ticket);
+  });
+}
+
+function escapeHtml(str){
+  return String(str).replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+function escapeAttr(str){ return escapeHtml(str); }
+
+async function addStore(){
+  const input = document.getElementById('new-store');
+  const name = input.value.trim();
+  if(!name){ showToast('請輸入商店名稱'); return; }
+  state.stores.push({ id: uid(), name });
+  input.value = '';
+  renderAll();
+  await saveState();
+  showToast('已新增商店');
+}
+
+async function deleteStore(id){
+  state.stores = state.stores.filter(s=>s.id!==id);
+  renderAll();
+  await saveState();
+}
+
+async function addProduct(){
+  const nameInput = document.getElementById('new-product');
+  const imgInput = document.getElementById('new-product-img');
+  const name = nameInput.value.trim();
+  const image = imgInput.value.trim();
+  if(!name){ showToast('請輸入商品名稱'); return; }
+  state.products.push({ id: uid(), name, image });
+  nameInput.value = ''; imgInput.value = '';
+  renderAll();
+  await saveState();
+  showToast('已新增商品');
+}
+
+async function deleteProduct(id){
+  state.products = state.products.filter(p=>p.id!==id);
+  renderAll();
+  await saveState();
+}
+
+async function addRecord(){
+  const buyer = document.getElementById('f-buyer').value.trim();
+  const storeId = document.getElementById('f-store').value;
+  const productId = document.getElementById('f-product').value;
+  const price = document.getElementById('f-price').value;
+  const paid = document.getElementById('f-paid').checked;
+  const success = document.getElementById('f-success').checked;
+
+  if(!buyer){ showToast('請輸入買家名稱'); return; }
+  if(!storeId){ showToast('請先新增並選擇商店'); return; }
+  if(!productId){ showToast('請先新增並選擇商品'); return; }
+
+  state.records.push({
+    id: uid(), buyer, storeId, productId,
+    price: price ? Number(price) : 0,
+    paid, success
+  });
+
+  document.getElementById('f-buyer').value = '';
+  document.getElementById('f-price').value = '';
+  document.getElementById('f-paid').checked = false;
+  document.getElementById('f-success').checked = false;
+
+  renderAll();
+  await saveState();
+  showToast('已加入紀錄');
+}
+
+async function deleteRecord(id){
+  state.records = state.records.filter(r=>r.id!==id);
+  renderAll();
+  await saveState();
+}
+
+document.getElementById('btn-add-store').onclick = addStore;
+document.getElementById('btn-add-product').onclick = addProduct;
+document.getElementById('btn-add-record').onclick = addRecord;
+document.getElementById('btn-export').onclick = exportData;
+document.getElementById('import-file').onchange = (e)=>{
+  if(e.target.files && e.target.files[0]){
+    importData(e.target.files[0]);
+    e.target.value = '';
+  }
+};
+
+document.querySelectorAll('.tab-btn').forEach(btn=>{
+  btn.onclick = ()=>{
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('panel-' + btn.dataset.tab).classList.add('active');
+  };
+});
+
+loadState();
+</script>
+</body>
+</html>
